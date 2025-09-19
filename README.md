@@ -28,3 +28,4 @@ for file apache-maven-3.9.11-bin.zip
 
 (4) run your code with cmd: java -jar target/hello.llm-1.0-SNAPSHOT-jar-with-dependencies.jar ,you can see information as following:
 
+(5) clean the project with cmd: mvn clean
