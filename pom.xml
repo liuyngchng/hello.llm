@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>hello_llm</groupId>
-    <artifactId>my.txt2sql</artifactId>
+    <groupId>richard.test</groupId>
+    <artifactId>hello.llm</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>world</name>
@@ -95,19 +95,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.4.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>hello.llm.Txt2Sql</mainClass>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                        </manifest>
-                        <manifestEntries>
-                            <Class-Path>.</Class-Path>
-                            <Build-Time>${maven.build.timestamp}</Build-Time>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <mainClass>Txt2Sql</mainClass>-->
+<!--                            <addClasspath>true</addClasspath>-->
+<!--                            <classpathPrefix>lib/</classpathPrefix>-->
+<!--                        </manifest>-->
+<!--                        <manifestEntries>-->
+<!--                            <Class-Path>.</Class-Path>-->
+<!--                            <Build-Time>${maven.build.timestamp}</Build-Time>-->
+<!--                        </manifestEntries>-->
+<!--                    </archive>-->
+<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -119,7 +119,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>hello.llm.Txt2Sql</mainClass>
+                            <mainClass>rd.test.Txt2Sql</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
