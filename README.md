@@ -1,4 +1,4 @@
-#1. env
+# 1. env
 ## 1.1 java 17
 ubuntu
 ```$sh
