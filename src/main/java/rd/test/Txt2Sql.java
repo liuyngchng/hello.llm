@@ -9,11 +9,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Objects;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
 
 
 
 public class Txt2Sql {
+
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private static final String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
     private final String apiKey;
@@ -80,7 +85,7 @@ public class Txt2Sql {
      */
     private String sendRequest(ChatRequest request) throws Exception {
         String requestBody = objectMapper.writeValueAsString(request);
-        System.out.println("start HTTP request to:" + DEEPSEEK_API_URL);
+        LOGGER.info("start HTTP request to {}", DEEPSEEK_API_URL);
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(DEEPSEEK_API_URL))
                 .header("Content-Type", "application/json")
@@ -98,7 +103,7 @@ public class Txt2Sql {
             throw new RuntimeException("API request failed with status: " +
                     response.statusCode() + ", body: " + response.body());
         }
-        System.out.println("HTTP response body:" + response.body());
+        LOGGER.info("HTTP response body, {}", response.body());
         return response.body();
     }
 
@@ -141,6 +146,8 @@ public class Txt2Sql {
 
     // 使用示例
     public static void main(String[] args) {
+        Thread.currentThread().setName("boot");
+        Configurator.initialize("Log4j2", "./config/log4j2.xml");
         String apiKey = "add_your_api_key";
         Txt2Sql converter = new Txt2Sql(apiKey);
 
@@ -156,12 +163,10 @@ public class Txt2Sql {
 
         try {
             String jsonResponse = converter.convertToSql(question, schema);
-            System.out.println("DeepSeek API返回的原始JSON:");
-            System.out.println(jsonResponse);
+            LOGGER.info("DeepSeek API返回的原始JSON: {}", jsonResponse);
 
         } catch (Txt2SqlException e) {
-            System.err.println("转换失败: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("转换失败: {}", e.getMessage());
         }
     }
 }

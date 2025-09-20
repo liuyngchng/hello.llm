@@ -2,3 +2,5 @@
 .mvn
 *.iml
 target
+src/main/resources/cfg.yml
+src/main/resources/cfg.db

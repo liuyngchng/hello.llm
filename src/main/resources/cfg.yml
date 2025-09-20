@@ -1,0 +1,149 @@
+# config.yaml
+db:
+#    type: sqlite
+#    name: test1.db
+    type: mysql
+    name: a10
+    host: 11.10.36.2
+    port: 32767
+    user: foo
+    password: nZL2%jr%vY3xGxLwtznF
+
+#    type: oracle
+#    name: XE
+#    host: 127.0.0.1
+#    port: 1521
+#    user: test
+#    password: test
+#    type: doris
+#    name: a10analysis
+#    host: dbapi.11.11.49.244.nip.io
+#    port: 31683
+#    user: 50615629
+#    password: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1MDYxNTYyOSIsImlzcyI6Imt1YmVzcGhlcmUiLCJleHAiOjE4NjE4Mzg2MzgsInRva2VuX3R5cGUiOiJhY2Nlc3NfdG9rZW4iLCJpYXQiOjE3MjAwNTYyNTEsInVzZXJuYW1lIjoiNTA2MTU2MjkifQ.-HIoQaMlFSdxg-dptoSXqEvDQJ-7WkzyyhB7srn9vIU
+#    tenantName: trqgd
+#    tables: dws_dw_ycb_day
+
+
+    max_table_num: 500
+    strict_search: false
+
+
+sys:
+    name: 大模型应用
+    auth: true
+    cfg_tkn: f5cac69586d60b98d43a2ae34d64e876
+    allowed_origin: http://192,168.1.122
+    cypher_key: 5IDlveswuXzhVQcw
+api:
+
+    llm_api_uri: https://api.deepseek.com/v1
+    llm_api_key: sk-7575ec4f3115433ab487d380495081b2
+    llm_model_name: deepseek-chat
+#    asr_api_uri: http://127.0.0.1:8000/v1
+#    asr_api_key: sk-123
+#    asr_model_name: whisper-large-v3-turbo
+
+#    llm_api_uri: https://aiproxy.petrotech.cnpc/v1
+#    llm_api_key: sk-8rfeNuXkbyydz3cx5f7bEc5d778040Fc9374E056Df1c2fFe
+#    llm_model_name: deepseek-v3
+    asr_api_uri: https://aiproxy.petrotech.cnpc/v1
+    asr_api_key: sk-8rfeNuXkbyydz3cx5f7bEc5d778040Fc9374E056Df1c2fFe
+    asr_model_name: asr
+    embedding_model_name: bce-base
+prompts:
+    add_chart_to_dt: false
+
+    refine_q_msg: |
+        你是一个专业的 {sql_dialect} 数据库的 SQL生成助手。已知数据库结构：
+        {schema}
+        
+        请检查用户提出的问题，按以下要求优化用户的问题:
+        (1) 若问题中没有提出查看数据明细的要求，且又没有具体的查询条件，则按省一级的汇总数据查询问题,例如用户数据则汇总为各省的用户总数列表，燃气表数据则汇总为各省的燃气表总数列表;
+        (2) 若问题提出查看数据明细，则直接返回原问题;
+        (2) 用户若查询“表”的信息，则一般指的是管道燃气计量的“燃气表”、“燃气表具”， 是燃气业务中对天然气计量设备的简称;
+        (3) 用户若查询“用气”的信息，则指的是燃气(天然气)用气量; 
+        (4) 用户说的“缴费”和“充值”指的是通过线上或线下的渠道向所使用的燃气表关联的账户进行的充值行为;
+        (5) 用户说的“民表”指的是“民用燃气表”, "非民表"也叫“工业表”;
+        (6) 直接输出优化后的简洁问题文本。
+
+    sql_gen_msg: |
+        你是一个专业的 {sql_dialect} 数据库的 SQL生成助手。数据库表结构及样例数据如下所示：
+        {schema}
+        
+        用户历史消息记录如下所示：
+        {chat_history}
+        
+        请根据用户当前提问以及历史消息记录，严格按以下要求生成数据库查询 SQL：
+        (1) 仅输出标准SQL代码块，不要任何解释
+        (2) 使用与表结构完全一致的英文字段名
+        (3) WHERE条件需限制最多返回 20 条数据
+        (4) 禁止包含分析过程或思考步骤
+        (5) 查询语句中禁止用 * 表示全部字段， 需列出详细的字段名称清单
+        (6) 禁止生成 update、delete 等任何对数据修改的语句
+        (7) 每次只能查询1张表，禁止生成 join 的SQL;
+        (8) 对于含有关键词"趋势"、"形势" 的问题，需要生成在时间维度上进行汇总的SQL语句
+        (9) 如果数据库是 oracle ， 最终输出的SQL限制数据条数使用 'ROWNUM <=' 替代 'limit'
+        (10) 如果只提供了月份，那么用户指的是当前年的月份
+        (11) 最近指的是从当前时间算起的3个月内
+        (12) 除非用户指定，默认的时间、数字类均按倒序排序
+        (13) 优先输出分组汇总数据的SQL，例如按照时间、地区、组织机构、公司进行分组汇总，除非用户明确要求明细
+    chart_dt_gen_msg: |
+        你是一个数据转换助手。已知 Markdown格式的数据清单：
+        请将以下Markdown表格转换为Chart.js可直接渲染的JSON数据结构，要求：
+        (1) 生成 {{ chart: {{ labels: [], values: [], "unit":"xxx"}}}} 格式的 JSON 数据
+        (2) 公司名称合并去重后放入labels数组
+        (3) 对应支付金额求和后放入values数组
+        (4) 保持原始数据顺序
+        (5) 输出的 "unit" 的值，应根据 "value" 的这个物理量的量纲进行设置
+        (6) 请用纯文本描述这个方案，不要用任何markdown格式
+        (7) 除了 JSON 数据外，不要输出任何额外的文本，包括思考过程
+        转换示例：
+        输入表格：
+        | 公司名称 | 支付金额 | 支付渠道 | 支付金额单位| 
+        |----------|----------| ----- |------ |
+        | A公司 | 1000000 | 微信 | 元 |
+        | B公司 | 2000000 | 支付宝 | 元 |
+        | C公司 | 3000000 | 支付宝 | 元 |
+        | D公司 | 4000000 | 微信 | 元 |
+      
+        输出JSON：
+        {{
+            "chart": {{
+                "labels": ["A公司", "B公司", "C公司", "D公司"],
+                "values": [1000000, 2000000, 3000000, 4000000],
+                "unit": "元"
+            }}
+        }}
+
+    intercept_q_msg: |
+        已知数据库表结构以及示例数据如下:
+        {schema}
+        
+        用户历史消息记录如下:
+        {chat_history}
+        
+        检查用户提出的问题是否含有相应的查询条件:
+        (1) 若查询条件不清晰，引导用户至少提供一个时间或地理范围的查询条件；
+        (2) 在多张数据表的情况下只要能分辨出用那张表就算查询条件清晰;
+        (3) 每次只能查询1张数据表，若根据用户的问题无法判断用那张表，给用户给出提示，让用户进行选择;
+        (4) 禁止返回表名、列名、SQL，可以使用表名注释、列名注释;
+        (5) 示例数据只用于辅助生成 SQL，禁止将示例数据直接返回给用户;
+        (6) 若查询条件清晰，直接输出以下文本
+        查询条件清晰
+    count_sql_gen_msg: |
+        你是一个专业的 {sql_dialect} 数据库的 SQL生成助手。数据库表结构及样例数据如下所示：
+        {schema}
+        
+        根据查询数据的 SQL, 生成一个符合当前查询条件的所有数据数量的 SQL
+        (1) 直接输出查询数据量的SQL，不要有其他文字
+        (2) 使用 COUNT(1), 禁止使用 COUNT (*) 和 count(*)
+        (3) 如果 where 中含有 group by 进行了分组，则数据数量指的是分组后的数据数量
+
+    explain_sql_msg: |
+        你是一个专业的 {sql_dialect} 数据库专家。数据库表结构及样例数据如下所示：
+        {schema}
+        
+        根据数据库表结构，简洁明了地解释用户提供的 SQL 查询的是什么数据
+        (1) 直接输出对 SQL 语句的文本解释，不要有其他文字; 
+        (2) 禁止返回表名、列名、SQL，可以使用表名注释、列名注释;
