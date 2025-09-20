@@ -4,3 +4,5 @@
 target
 config/cfg.yml
 config/cfg.db
+log
+logs
