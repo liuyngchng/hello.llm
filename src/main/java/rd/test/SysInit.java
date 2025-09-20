@@ -8,7 +8,6 @@ import java.util.HashMap;
 import org.yaml.snakeyaml.Yaml;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 
 public class SysInit {
 
@@ -49,7 +48,7 @@ public class SysInit {
 
 	// 重载方法，使用默认配置文件名称
 	public static Map<String, Object> initYmlCfg() {
-		return initYmlCfg("cfg.yml");
+		return initYmlCfg("config/cfg.yml");
 	}
 
 	public static void main(String[] args) {

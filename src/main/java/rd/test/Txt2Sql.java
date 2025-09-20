@@ -8,6 +8,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,13 +21,19 @@ public class Txt2Sql {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+    private final String apiUri;
     private final String apiKey;
+    private final String modelName;
+
+//    private static final String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+//    private final String apiKey;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    public Txt2Sql(String apiKey) {
+    public Txt2Sql(String apiUri, String apiKey, String modelName) {
+        this.apiUri = Objects.requireNonNull(apiUri, "API URI cannot be null");
         this.apiKey = Objects.requireNonNull(apiKey, "API key cannot be null");
+        this.modelName = Objects.requireNonNull(modelName, "modelName cannot be null");
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(30))
                 .build();
@@ -85,25 +92,21 @@ public class Txt2Sql {
      */
     private String sendRequest(ChatRequest request) throws Exception {
         String requestBody = objectMapper.writeValueAsString(request);
-        LOGGER.info("start HTTP request to {}", DEEPSEEK_API_URL);
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(DEEPSEEK_API_URL))
+        LOGGER.info("start HTTP request to {}", this.apiUri);
+        final HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(this.apiUri))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
+                .header("Authorization", "Bearer " + this.apiKey)
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .timeout(Duration.ofSeconds(60))
                 .build();
 
-        HttpResponse<String> response = httpClient.send(
+        final HttpResponse<String> response = httpClient.send(
                 httpRequest,
                 HttpResponse.BodyHandlers.ofString()
         );
 
-        if (response.statusCode() != 200) {
-            throw new RuntimeException("API request failed with status: " +
-                    response.statusCode() + ", body: " + response.body());
-        }
-        LOGGER.info("HTTP response body, {}", response.body());
+        LOGGER.info("HTTP response status {}, body, {}", response.statusCode(), response.body());
         return response.body();
     }
 
@@ -148,8 +151,13 @@ public class Txt2Sql {
     public static void main(String[] args) {
         Thread.currentThread().setName("boot");
         Configurator.initialize("Log4j2", "./config/log4j2.xml");
-        String apiKey = "add_your_api_key";
-        Txt2Sql converter = new Txt2Sql(apiKey);
+        Map<String, Object> myCfg = SysInit.initYmlCfg();
+        Map<String, Object> apiConfig = (Map<String, Object>) myCfg.get("api");
+        String apiUri = String.format("%s/chat/completions", apiConfig.get("llm_api_uri"));
+        String apiKey = (String) apiConfig.get("llm_api_key");
+        String modelName = (String) apiConfig.get("llm_model_name");
+        LOGGER.info("api_uri {}, api_key {}, model {}", apiUri, apiKey, modelName);
+        Txt2Sql converter = new Txt2Sql(apiUri, apiKey, modelName);
 
         // 示例数据库schema
         String schema = "表结构:\n" +
@@ -163,10 +171,10 @@ public class Txt2Sql {
 
         try {
             String jsonResponse = converter.convertToSql(question, schema);
-            LOGGER.info("DeepSeek API返回的原始JSON: {}", jsonResponse);
+            LOGGER.info("response: {}", jsonResponse);
 
         } catch (Txt2SqlException e) {
-            LOGGER.error("转换失败: {}", e.getMessage());
+            LOGGER.error("convert failed", e);
         }
     }
 }
