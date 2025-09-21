@@ -1,5 +1,6 @@
 package rd.test;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,7 +48,7 @@ public class Txt2Sql {
 
             // 构建请求消息
             ChatRequest request = new ChatRequest(
-                    "deepseek-chat",
+                    this.modelName,
                     new Message[]{
                             new Message("system", systemPrompt),
                             new Message("user", question)
@@ -168,7 +169,8 @@ public class Txt2Sql {
 
         try {
             String jsonResponse = converter.convertToSql(question, schema);
-            LOGGER.info("response: {}", jsonResponse);
+            JSONObject object = JSONObject.parseObject(jsonResponse);
+            LOGGER.info("convert_result: {}", object.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content"));
 
         } catch (Txt2SqlException e) {
             LOGGER.error("convert failed", e);
