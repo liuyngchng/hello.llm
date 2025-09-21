@@ -24,9 +24,6 @@ public class Txt2Sql {
     private final String apiUri;
     private final String apiKey;
     private final String modelName;
-
-//    private static final String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
-//    private final String apiKey;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
